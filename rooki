@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+readonly ROOKI_DEBUG=${ROOKI_DEBUG:=}
+[[ -n $ROOKI_DEBUG ]] && set -eux || set -eu
+readonly XDG_CONFIG_HOME=${XDG_CONFIG_HOME:=$HOME/.config}
+readonly config_folder=$XDG_CONFIG_HOME/rooki
+readonly src=$(readlink -f $1)
+readonly bin=$config_folder/$(md5sum $src | awk '{print $1}')
+[[ -x $bin ]] && { shift 1; $bin "$@"; } || {
+  mkdir -p $config_folder
+  f=$(mktemp)
+  sed "/^#!.*/d" $src > $f # remove shbang from src file to compile
+  for fl in $(sed -n "s/.*rooki:\(\S\+\).*/\1/gp" $src | sort -u); do
+    eval $fl=\"$(awk -F "rooki:$fl *" "{print \$2}" $src | paste -s)\"
+  done
+  eval $spell && # cast the spell
+  { [[ -n $ROOKI_DEBUG ]] || rm $f; } && # remove temporary file if no debug
+  [[ -x $bin ]] && $0 "$@" # if the binary was created, run rooki again
+}

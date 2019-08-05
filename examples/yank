@@ -1,0 +1,78 @@
+#!/usr/bin/env rooki
+// rooki:flags -pedantic -std=c++11
+// rooki:flags -x c++ -Wall -g1 -I $(dirname $src)/include
+// rooki:spell g++ $flags $f -o $bin
+// vim:ft=cpp
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <CLI11.hpp>
+
+std::vector<std::string> ls(const std::string &dirName) {
+  DIR *dir;
+  struct dirent *ent;
+  std::vector<std::string> files;
+  if ((dir = opendir(dirName.c_str())) != NULL) {
+    while ((ent=readdir(dir)) != NULL) files.push_back(ent->d_name);
+    closedir(dir);
+  }
+  return files;
+}
+
+int main(int argc, char *argv[])
+{
+  std::string reg{"default"};
+  std::string inputFile;
+  bool listRegisters{false};
+
+  CLI::App app{"A stupid simple yank program"};
+  app.add_option("input file", inputFile, "Input file to be yanked");
+  app.add_option("-r,--register", reg, "Register name");
+  app.add_flag("-l,--list", listRegisters, "List defined registers");
+  CLI11_PARSE(app, argc, argv);
+
+  const std::string home{getenv("HOME")};
+  const std::string configFolder{home + "/.config/yank"};
+  const std::string registerFolder{configFolder + "/registers"};
+  const std::string outFile{registerFolder + "/" + reg};
+
+  // TODO: do this maybe in c?
+  std::system(("mkdir -p " + registerFolder).c_str());
+
+  if (listRegisters) {
+    for (auto &fileName: ls(registerFolder)){
+      std::ifstream regFile{registerFolder + "/" + fileName};
+      std::string regLine;
+      if (regFile.is_open()) {
+        std::getline(regFile, regLine);
+        std::cout << fileName << ":\t" << regLine << std::endl;
+      }
+    };
+    return 0;
+  }
+
+  std::string line;
+  if (! isatty(0)) {
+    // Copy from cin to outFile
+    std::ofstream s{outFile};
+    while (getline(std::cin, line)) { s << line << std::endl; }
+  } else if (!inputFile.empty()) {
+    // Copy from file to outFile
+    std::ifstream si{inputFile};
+    std::ofstream so{outFile};
+    while (getline(si, line)) { so << line << std::endl; }
+  } else {
+    // Copy from outFile to standard out
+    std::ifstream s{outFile};
+    if (s.is_open()) {
+      while (getline(s, line)) { std::cout << line << std::endl; }
+      s.close();
+    }
+  }
+
+  return 0;
+}
