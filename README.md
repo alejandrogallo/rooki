@@ -22,17 +22,17 @@ which later can be used in the `rooki:spell` section as
 ```c
 // rooki:someflag -I$(pwd)
 // rooki:someflag -I$HOME
-// rooki:spell c $someflag $f -o $bin
+// rooki:spell cc $someflag $f -o $bin
 ```
 
 There are some general variables already defined:
 
 | Variable | Explanation | Example |
 | --- | --- | :---: |
-| `$bin` | Path to the created binary | `rooki:spell gcc $f -o $bin` |
-| `$f` | Path to the temporary source file that will be compiled | `// rooki:spell gcc $f -o $bin` |
-| `$src` | Path to the source file, the caller | `rooki:include -I$(dirname $src)/include`|
-| `$config_folder` | Path to rooki config folder | `rooki:include -I$(dirname $src)/include`|
+| `bin` | Path to the created binary | `rooki:spell gcc $f -o $bin` |
+| `f` | Path to the temporary source file that will be compiled | `// rooki:spell gcc $f -o $bin` |
+| `src` | Path to the source file, the caller | `rooki:include -I$(dirname $src)/include`|
+| `config_folder` | Path to rooki config folder ||
 
 What `rooki` does when you do `rooki yourscript` is the following
 - Create a temporal file and save the path in the variable `f`.
