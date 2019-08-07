@@ -1,7 +1,7 @@
 # rooki
 A stupid simple script runner supporting c, c++, rust, haskell and virtually anything
 
-`Rooki` is written in less than 20 lines of `bash`, and has a very flexible
+`Rooki` is written in 20 lines of `bash`, and has a very flexible
 functionality.
 
 # How does it work?
